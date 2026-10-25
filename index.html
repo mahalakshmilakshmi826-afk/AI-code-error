@@ -1,0 +1,719 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeSense | AI Code Error Explainer</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #0b1020;
+      color: #edf2ff;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 22px 8%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      border-bottom: 1px solid #28324a;
+      background: #10172a;
+    }
+
+    .logo {
+      font-size: 25px;
+      font-weight: bold;
+      color: #78a9ff;
+    }
+
+    .logo span {
+      color: #fff;
+    }
+
+    .tag {
+      color: #b9c5df;
+      font-size: 13px;
+    }
+
+    main {
+      width: min(1100px, 92%);
+      margin: 40px auto;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 43px);
+      margin-bottom: 13px;
+    }
+
+    .hero h1 span {
+      color: #78a9ff;
+    }
+
+    .hero p {
+      color: #aebbd5;
+      line-height: 1.7;
+      max-width: 650px;
+      margin: auto;
+    }
+
+    .panel {
+      background: #121b30;
+      border: 1px solid #293651;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 12px 35px #00000020;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 9px;
+      color: #dce6fa;
+      font-weight: bold;
+    }
+
+    select {
+      background: #0b1020;
+      color: white;
+      border: 1px solid #394967;
+      padding: 11px;
+      border-radius: 8px;
+      min-width: 160px;
+      font-size: 14px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 280px;
+      resize: vertical;
+      background: #080d19;
+      color: #d9e5ff;
+      border: 1px solid #34435f;
+      border-radius: 10px;
+      padding: 18px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      outline: none;
+    }
+
+    textarea:focus, select:focus {
+      border-color: #78a9ff;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      opacity: 0.92;
+    }
+
+    .primary {
+      background: #78a9ff;
+      color: #081226;
+    }
+
+    .secondary {
+      background: #253450;
+      color: #edf2ff;
+    }
+
+    .clear {
+      background: transparent;
+      border: 1px solid #40506c;
+      color: #d7e1f5;
+    }
+
+    .result-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .result-heading h2 {
+      font-size: 22px;
+    }
+
+    .status {
+      background: #263650;
+      color: #c8d8f5;
+      border-radius: 20px;
+      padding: 7px 12px;
+      font-size: 12px;
+    }
+
+    .result-card {
+      background: #0b1324;
+      border: 1px solid #2d3c57;
+      border-left: 4px solid #78a9ff;
+      padding: 18px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+    }
+
+    .result-card.error {
+      border-left-color: #ff727f;
+    }
+
+    .result-card.warning {
+      border-left-color: #ffc56b;
+    }
+
+    .result-card.success {
+      border-left-color: #61d6a5;
+    }
+
+    .result-card h3 {
+      margin-bottom: 10px;
+      font-size: 17px;
+    }
+
+    .result-card p {
+      color: #bdc9df;
+      line-height: 1.7;
+      margin-bottom: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: #070b14;
+      color: #a9e6c8;
+      padding: 13px;
+      border-radius: 7px;
+      margin-top: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 30px 15px;
+      color: #aebbd5;
+      line-height: 1.8;
+      border: 1px dashed #35435e;
+      border-radius: 10px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .feature {
+      background: #121b30;
+      border: 1px solid #293651;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .feature .icon {
+      font-size: 27px;
+      margin-bottom: 12px;
+    }
+
+    .feature h3 {
+      margin-bottom: 9px;
+      font-size: 16px;
+    }
+
+    .feature p {
+      color: #aebbd5;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px 15px;
+      color: #8391ad;
+      border-top: 1px solid #25314a;
+      margin-top: 45px;
+      font-size: 13px;
+    }
+
+    .note {
+      color: #9eacc6;
+      font-size: 12px;
+      margin-top: 15px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        padding: 18px 5%;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      main {
+        margin-top: 28px;
+      }
+
+      .panel {
+        padding: 16px;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+      }
+
+      textarea {
+        min-height: 240px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">Code<span>Sense</span> ✦</div>
+    <div class="tag">A smarter way to understand code</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Understand Your Code, <span>Fix Your Errors</span></h1>
+      <p>
+        Paste your code, select a programming language, and explore
+        possible errors with beginner-friendly explanations and fixes.
+      </p>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <div>
+          <label for="language">Programming language</label>
+          <select id="language">
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="java">Java</option>
+            <option value="c">C</option>
+            <option value="cpp">C++</option>
+          </select>
+        </div>
+
+        <button class="secondary" id="exampleBtn" type="button">
+          Try Example
+        </button>
+      </div>
+
+      <label for="code">Your source code</label>
+      <textarea
+        id="code"
+        spellcheck="false"
+        placeholder="Paste your program here..."
+        aria-label="Enter source code"
+      ></textarea>
+
+      <div class="buttons">
+        <button class="primary" id="analyzeBtn" type="button">
+          ✨ Analyze Code
+        </button>
+        <button class="secondary" id="copyBtn" type="button">
+          Copy Code
+        </button>
+        <button class="clear" id="clearBtn" type="button">
+          Clear
+        </button>
+      </div>
+
+      <p class="note">
+        Note: This prototype checks selected common error patterns.
+        It does not execute your program or detect every possible error.
+      </p>
+    </section>
+
+    <section class="panel" id="results" aria-live="polite">
+      <div class="result-heading">
+        <h2>Analysis Results</h2>
+        <span class="status">Waiting for code</span>
+      </div>
+
+      <div class="empty">
+        <div style="font-size: 35px;">⌘</div>
+        Your results will appear here.<br>
+        Enter some code and click Analyze Code.
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="feature">
+        <div class="icon">🔎</div>
+        <h3>Error Detection</h3>
+        <p>Check for selected common coding mistakes and suspicious patterns.</p>
+      </div>
+
+      <div class="feature">
+        <div class="icon">💡</div>
+        <h3>Simple Explanations</h3>
+        <p>Understand why a detected pattern may cause a problem.</p>
+      </div>
+
+      <div class="feature">
+        <div class="icon">🛠️</div>
+        <h3>Suggested Fixes</h3>
+        <p>See example corrections that help you learn programming concepts.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    CodeSense — AI Code Error Explainer Mini Project<br>
+    Built with HTML, CSS and JavaScript
+  </footer>
+
+  <script>
+    const codeInput = document.getElementById("code");
+    const languageSelect = document.getElementById("language");
+    const results = document.getElementById("results");
+
+    const examples = {
+      python: `def greet(name)
+    print("Hello", name)
+
+greet("Student")`,
+
+      javascript: `function greet(name) {
+  console.log("Hello " + name)
+}
+
+console.log(greet("Student");
+`,
+
+      java: `public class Main {
+    public static void main(String[] args) {
+        int number = "hello";
+        System.out.println(number);
+    }
+}`,
+
+      c: `#include <stdio.h>
+
+int main() {
+    int number = 10
+    printf("%d", number);
+    return 0;
+}`,
+
+      cpp: `#include <iostream>
+using namespace std;
+
+int main() {
+    int number = "hello";
+    cout << number << endl;
+    return 0;
+}`
+    };
+
+    function makeFinding(title, description, fix, type = "error") {
+      return { title, description, fix, type };
+    }
+
+    function analyzeCode() {
+      const code = codeInput.value;
+      const language = languageSelect.value;
+      const findings = [];
+
+      if (!code.trim()) {
+        showResults([], "Please enter some code before analyzing.");
+        return;
+      }
+
+      if (language === "python") {
+        const lines = code.split("\n");
+
+        lines.forEach((line, index) => {
+          const trimmed = line.trim();
+
+          if (
+            /^(def|if|elif|else|for|while|class|try|except|finally|with)\b/.test(trimmed) &&
+            !trimmed.endsWith(":") &&
+            !trimmed.endsWith("\\")
+          ) {
+            findings.push(makeFinding(
+              "Possible missing colon",
+              `Line ${index + 1}: Python block statements such as def, if, for and class normally end with a colon (:).`,
+              `Review line ${index + 1} and add a colon if this is a block statement.`
+            ));
+          }
+
+          if (/^\s*print\s+[^(]/.test(line)) {
+            findings.push(makeFinding(
+              "Possible print syntax error",
+              `Line ${index + 1}: Modern Python uses parentheses with print().`,
+              "Example: print('Hello world')"
+            ));
+          }
+        });
+
+        if (/^\s*def\s+\w+\s*\([^)]*\)\s*:/m.test(code) &&
+            !/^\s{1,}\S/m.test(code)) {
+          findings.push(makeFinding(
+            "Check indentation",
+            "Python requires an indented body inside a function.",
+            "Example:\ndef greet():\n    print('Hello')",
+            "warning"
+          ));
+        }
+
+        if (/\binput\s*\(\s*\)/.test(code) && /\bint\s*\(/.test(code) === false &&
+            /\b\d+\s*[-+*/]\s*input\s*\(/.test(code)) {
+          findings.push(makeFinding(
+            "Check input data type",
+            "Python input() returns text. Arithmetic may require converting the input to a number.",
+            "Example: age = int(input('Enter age: '))",
+            "warning"
+          ));
+        }
+      }
+
+      if (language === "javascript") {
+        if (/console\.log\s*\([^;\n]*\)\s*;?\s*\n/.test(code)) {
+          // A missing semicolon is usually valid JavaScript, so do not report it as an error.
+        }
+
+        const opens = (code.match(/\(/g) || []).length;
+        const closes = (code.match(/\)/g) || []).length;
+
+        if (opens !== closes) {
+          findings.push(makeFinding(
+            "Unbalanced parentheses",
+            "The number of opening and closing parentheses does not match.",
+            "Check function calls and ensure every opening ( has a matching )."
+          ));
+        }
+
+        if (/=\s*[^=].*[^=!<>]=(?!=)/.test(code) && /if\s*\([^)]*[^=!<>]=(?!=)[^=]/.test(code)) {
+          findings.push(makeFinding(
+            "Check assignment in condition",
+            "A single equals sign (=) assigns a value. You may have intended a comparison.",
+            "Example: if (score === 10) { ... }",
+            "warning"
+          ));
+        }
+
+        if (/^\s*const\s+\w+\s*=\s*;?/m.test(code)) {
+          findings.push(makeFinding(
+            "Missing variable value",
+            "A const declaration must be initialized with a value.",
+            "Example: const score = 10;"
+          ));
+        }
+      }
+
+      if (language === "java") {
+        if (/^\s*public\s+class\s+\w+/m.test(code) &&
+            !/^\s*public\s+static\s+void\s+main\s*\(/m.test(code)) {
+          findings.push(makeFinding(
+            "Check the main method",
+            "A typical standalone Java program needs a valid main method to start.",
+            "Example: public static void main(String[] args) { }",
+            "warning"
+          ));
+        }
+
+        if (/\bint\s+\w+\s*=\s*["']/.test(code)) {
+          findings.push(makeFinding(
+            "Possible incompatible data types",
+            "An int variable cannot store a text string such as \"hello\".",
+            "Use a number, for example: int number = 10; or declare a String variable."
+          ));
+        }
+
+        if (/System\.out\.println\s*\([^;]*\)\s*(?=\n|$)/m.test(code)) {
+          findings.push(makeFinding(
+            "Check statement terminator",
+            "Java statements normally end with a semicolon (;).",
+            "Example: System.out.println(\"Hello\");",
+            "warning"
+          ));
+        }
+      }
+
+      if (language === "c" || language === "cpp") {
+        if (/^\s*int\s+\w+\s*=\s*["']/.m.test(code)) {
+          findings.push(makeFinding(
+            "Possible incompatible data types",
+            "An int variable cannot hold a text string.",
+            "Example: int number = 10;"
+          ));
+        }
+
+        if (/^\s*int\s+\w+\s*=\s*[^;\n]+$/m.test(code)) {
+          findings.push(makeFinding(
+            "Possible missing semicolon",
+            "A variable declaration may be missing its terminating semicolon.",
+            "Example: int number = 10;"
+          ));
+        }
+
+        if (/printf\s*\(/.test(code) && !/#include\s*<stdio\.h>/.test(code)) {
+          findings.push(makeFinding(
+            "Check header file",
+            "C programs using printf normally include stdio.h.",
+            "Add #include <stdio.h> at the top of your C file.",
+            "warning"
+          ));
+        }
+
+        if (language === "cpp" && /cout\s*<</.test(code) &&
+            !/#include\s*<iostream>/.test(code)) {
+          findings.push(makeFinding(
+            "Check header file",
+            "C++ programs using cout normally include iostream.",
+            "Add #include <iostream> at the top of your C++ file.",
+            "warning"
+          ));
+        }
+      }
+
+      // Generic checks that may apply to multiple languages.
+      const openingBraces = (code.match(/\{/g) || []).length;
+      const closingBraces = (code.match(/\}/g) || []).length;
+
+      if (openingBraces !== closingBraces) {
+        findings.push(makeFinding(
+          "Unbalanced braces",
+          "The number of opening and closing curly braces does not match.",
+          "Check that each { has a matching }."
+        ));
+      }
+
+      showResults(findings, "Analysis complete");
+    }
+
+    function showResults(findings, statusText) {
+      const heading = `
+        <div class="result-heading">
+          <h2>Analysis Results</h2>
+          <span class="status">${escapeHTML(statusText)}</span>
+        </div>
+      `;
+
+      if (statusText.startsWith("Please enter")) {
+        results.innerHTML = heading + `
+          <div class="empty">${escapeHTML(statusText)}</div>
+        `;
+        return;
+      }
+
+      if (findings.length === 0) {
+        results.innerHTML = heading + `
+          <div class="result-card success">
+            <h3>✓ No known patterns detected</h3>
+            <p>
+              This prototype did not find any of its selected error patterns.
+              That does not guarantee the program is correct.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      const cards = findings.map(item => `
+        <div class="result-card ${item.type}">
+          <h3>${item.type === "warning" ? "⚠️" : "🔎"} ${escapeHTML(item.title)}</h3>
+          <p><strong>Explanation:</strong> ${escapeHTML(item.description)}</p>
+          <p><strong>Suggested fix:</strong></p>
+          <pre>${escapeHTML(item.fix)}</pre>
+        </div>
+      `).join("");
+
+      results.innerHTML = heading + cards;
+    }
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[character]);
+    }
+
+    document.getElementById("analyzeBtn").addEventListener("click", analyzeCode);
+
+    document.getElementById("exampleBtn").addEventListener("click", () => {
+      codeInput.value = examples[languageSelect.value];
+      analyzeCode();
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      codeInput.value = "";
+      results.innerHTML = `
+        <div class="result-heading">
+          <h2>Analysis Results</h2>
+          <span class="status">Waiting for code</span>
+        </div>
+        <div class="empty">Enter some code and click Analyze Code.</div>
+      `;
+      codeInput.focus();
+    });
+
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      if (!codeInput.value) {
+        alert("Please enter some code first.");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(codeInput.value);
+        alert("Code copied successfully!");
+      } catch {
+        codeInput.select();
+        const copied = document.execCommand("copy");
+        alert(copied ? "Code copied successfully!" : "Copy failed. Please copy manually.");
+      }
+    });
+  </script>
+
+</body>
+</html>
